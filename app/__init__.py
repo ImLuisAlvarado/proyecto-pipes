@@ -28,6 +28,9 @@ def create_app(config_class=Config):
     app.register_blueprint(product_bp)
     app.register_blueprint(category_bp)                  # ← nuevo
 
+    from app.printer_simulation import init_printer_simulator
+    init_printer_simulator(app)
+
     @app.route('/health')
     def health_check():
         return {"status": "ok", "message": "Restaurant POS Backend is running"}
