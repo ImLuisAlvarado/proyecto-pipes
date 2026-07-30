@@ -24,10 +24,9 @@ import csv
 import io
 from datetime import datetime, timedelta
 from collections import defaultdict
-from flask import Flask, render_template_string, jsonify, request, Response
+from flask import Blueprint, render_template_string, jsonify, request, Response
 
-app = Flask(__name__)
-
+printer_bp = Blueprint("printer_simulator", __name__)
 tickets = []
 tickets_lock = threading.Lock()
 
@@ -921,25 +920,25 @@ HTML = """
 """
 
 
-@app.route("/")
+@printer_bp.route("/")
 def index():
     return render_template_string(HTML)
 
 
-@app.route("/api/tickets")
+@printer_bp.route("/api/tickets")
 def get_tickets():
     with tickets_lock:
         return jsonify(list(tickets))
 
 
-@app.route("/api/clear", methods=["POST"])
+@printer_bp.route("/api/clear", methods=["POST"])
 def clear_tickets():
     with tickets_lock:
         tickets.clear()
     return jsonify({"ok": True})
 
 
-@app.route("/api/sales")
+@printer_bp.route("/api/sales")
 def get_sales():
     from_date = request.args.get("from")
     to_date = request.args.get("to")
@@ -954,7 +953,7 @@ def get_sales():
     return jsonify({"report": report, "sales": filtered})
 
 
-@app.route("/api/sales/export.csv")
+@printer_bp.route("/api/sales/export.csv")
 def export_csv():
     from_date = request.args.get("from")
     to_date = request.args.get("to")
@@ -980,7 +979,7 @@ def export_csv():
     )
 
 
-@app.route("/api/close-ticket")
+@printer_bp.route("/api/close-ticket")
 def close_ticket():
     from_date = request.args.get("from")
     to_date = request.args.get("to")
@@ -1014,13 +1013,13 @@ def close_ticket():
     return "\n".join(lines)
 
 
-@app.route("/api/clear-sales", methods=["POST"])
+@printer_bp.route("/api/clear-sales", methods=["POST"])
 def clear_sales():
     sales_store.clear()
     return jsonify({"ok": True})
 
 
-@app.route("/api/products")
+@printer_bp.route("/api/products")
 def get_products():
     from_date = request.args.get("from")
     to_date = request.args.get("to")
@@ -1041,7 +1040,7 @@ def get_products():
     })
 
 
-@app.route("/api/compare-days")
+@printer_bp.route("/api/compare-days")
 def compare_days():
     target_date = request.args.get("date")
     branch = request.args.get("branch")
@@ -1098,6 +1097,9 @@ def handle_connection(conn, addr, station):
         print("[{}] Ticket desde {} — {} bytes".format(ui_type.upper(), addr[0], len(raw)))
 
 
+servers_started = False
+servers_lock = threading.Lock()
+
 def tcp_server(port, station):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -1109,16 +1111,23 @@ def tcp_server(port, station):
             threading.Thread(target=handle_connection, args=(conn, addr, station), daemon=True).start()
 
 
-if __name__ == "__main__":
-    threading.Thread(target=tcp_server, args=(KITCHEN_PORT, "kitchen"), daemon=True).start()
-    threading.Thread(target=tcp_server, args=(CASHIER_PORT, "cashier"), daemon=True).start()
+def start_printer_simulator():
+    global servers_started
+    with servers_lock:
+        if servers_started:
+            return
 
-    print("\n" + "=" * 50)
-    print("  SIMULADOR DE IMPRESORAS POS")
-    print("=" * 50)
-    print("  Cocina      -> TCP  127.0.0.1:{}".format(KITCHEN_PORT))
-    print("  Caja        -> TCP  127.0.0.1:{}".format(CASHIER_PORT))
-    print("  Web UI      -> http://localhost:{}".format(WEB_PORT))
-    print("=" * 50 + "\n")
+        threading.Thread(target=tcp_server, args=(KITCHEN_PORT, "kitchen"), daemon=True).start()
+        threading.Thread(target=tcp_server, args=(CASHIER_PORT, "cashier"), daemon=True).start()
+        print("\n" + "=" * 50)
+        print("  SIMULADOR DE IMPRESORAS POS")
+        print("=" * 50)
+        print("  Cocina      -> TCP  127.0.0.0:{}".format(KITCHEN_PORT))
+        print("  Caja        -> TCP  127.0.0.1:{}".format(CASHIER_PORT))
+        print("  Web UI      -> https://<your-service>/")
+        print("=" * 50 + "\n")
 
-    app.run(host="0.0.0.0", port=WEB_PORT, debug=False)
+
+def init_printer_simulator(app):
+    app.register_blueprint(printer_bp)
+    start_printer_simulator()
