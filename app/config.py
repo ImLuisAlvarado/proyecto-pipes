@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    # Clave secreta para sesiones y seguridad (cámbiala en producción)
+    # Clave secreta para sesiones y seguridad
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-super-secret-key')
     
     # URL de conexión a PostgreSQL

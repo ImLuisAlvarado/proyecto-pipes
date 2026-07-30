@@ -1,98 +1,139 @@
+# app/repositories/order_repository.py
 from uuid import UUID
+from datetime import datetime
 from sqlalchemy.sql import func
 from app.extensions import db
 from app.models.order import Order, OrderRefill, OrderItem
-from datetime import datetime
+
 
 class OrderRepository:
-    
+
+    @staticmethod
+    def list_orders(branch_id=None, status=None) -> list[Order]:
+        q = Order.query
+        if branch_id:
+            q = q.filter_by(branch_id=branch_id)
+        if status:
+            q = q.filter_by(status=status)
+        return q.order_by(Order.opened_at.desc()).all()
+
     @staticmethod
     def get_by_id(order_id: UUID) -> Order:
-        """Busca una orden con todos sus items y refills precargados."""
         return Order.query.get(order_id)
 
     @staticmethod
     def create_order(order_model: Order, initial_items: list[OrderItem]) -> Order:
-        """Guarda la orden principal y sus items iniciales en una sola transacción."""
         db.session.add(order_model)
-        db.session.flush()  # Genera el UUID de la orden antes de guardarla en los items
-        
+        db.session.flush()
         for item in initial_items:
             item.order_id = order_model.id
             db.session.add(item)
-            
         db.session.commit()
         return order_model
 
     @staticmethod
-    def add_refill_round(order_id: UUID, created_by: UUID, reason: str, items: list[OrderItem]) -> OrderRefill:
-        """Registra una nueva ronda de refills calculando el consecutivo automático."""
-        # 1. Calcular el siguiente número de refill (refill_no) para esta orden específica
-        max_refill = db.session.query(func.max(OrderRefill.refill_no))\
+    def add_items(order_id: UUID, items: list[OrderItem]) -> None:
+        for item in items:
+            item.order_id = order_id
+            db.session.add(item)
+        db.session.commit()
+
+    @staticmethod
+    def update_status(order_id: UUID, status: str) -> Order:
+        order = Order.query.get(order_id)
+        if order:
+            order.status = status
+            db.session.commit()
+        return order
+
+    @staticmethod
+    def save() -> None:
+        db.session.commit()
+
+    @staticmethod
+    def get_refills(order_id: UUID) -> list[OrderRefill]:
+        return OrderRefill.query\
+            .filter_by(order_id=order_id)\
+            .order_by(OrderRefill.refill_no.asc())\
+            .all()
+
+    @staticmethod
+    def add_refill_round(order_id: UUID, created_by: UUID,
+                         reason: str, items: list[OrderItem]) -> OrderRefill:
+        max_no = db.session.query(func.max(OrderRefill.refill_no))\
             .filter(OrderRefill.order_id == order_id).scalar()
-        
-        next_refill_no = (max_refill or 0) + 1
-        
-        # 2. Crear la cabecera del refill
+        next_no = (max_no or 0) + 1
+
         refill = OrderRefill(
             order_id=order_id,
             created_by=created_by,
             reason=reason,
-            refill_no=next_refill_no
+            refill_no=next_no,
         )
         db.session.add(refill)
-        db.session.flush()  # Genera el ID del refill
-        
-        # 3. Vincular los nuevos items a la orden y a esta ronda de refill
+        db.session.flush()
+
         for item in items:
-            item.order_id = order_id
+            item.order_id  = order_id
             item.refill_id = refill.id
-            item.is_refill = True  # Forzamos la bandera de tu esquema
+            item.is_refill = True
             db.session.add(item)
-            
+
         db.session.commit()
         return refill
 
     @staticmethod
     def update_order_totals(order_id: UUID) -> Order:
-        """
-        Recalcula matemáticamente el subtotal, impuestos y total de la orden
-        basándose en la suma de sus order_items actuales.
-        """
         order = Order.query.get(order_id)
         if not order:
             return None
-            
-        # Obtenemos todos los items vigentes de la orden
-        items = OrderItem.query.filter(OrderItem.order_id == order_id).all()
-        
-        subtotal = 0
-        tax_total = 0
-        
+        items = OrderItem.query.filter_by(order_id=order_id).all()
+        subtotal = tax_total = 0
         for item in items:
-            # qty y unit_price son Decimal gracias a los esquemas
-            item_subtotal = item.qty * item.unit_price
-            item_tax = item_subtotal * (item.tax_rate / 100)
-            
-            subtotal += item_subtotal
-            tax_total += item_tax
-            
-        order.subtotal = subtotal
+            line     = item.qty * item.unit_price
+            subtotal += line
+            tax_total += line * (item.tax_rate / 100)
+        order.subtotal  = subtotal
         order.tax_total = tax_total
-        # total = subtotal + tax - discounts (asumiendo descuento 0 inicial)
-        order.total = (subtotal + tax_total) - order.discount_total
-        
+        order.total     = (subtotal + tax_total) - order.discount_total
         db.session.commit()
         return order
-    
+
     @staticmethod
-    def close_order(order_id: UUID, closed_by: UUID) -> Order:
-        """Marca la orden como cerrada y registra la hora exacta."""
+    def delete_order_item(order_id: UUID, item_id: UUID) -> OrderItem | None:
+        item = OrderItem.query.filter_by(order_id=order_id, id=item_id).first()
+        if not item:
+            return None
+        db.session.delete(item)
+        db.session.commit()
+        return item
+
+    @staticmethod
+    def transfer_order(order_id: UUID, old_table_id: UUID, new_table_id: UUID) -> Order:
+        from app.models.core import DiningTable
+        order = Order.query.get(order_id)
+        if not order:
+            return None
+
+        order.table_id = new_table_id
+
+        old_table = DiningTable.query.get(old_table_id)
+        if old_table:
+            old_table.status = 'available'
+
+        new_table = DiningTable.query.get(new_table_id)
+        if new_table:
+            new_table.status = 'occupied'
+
+        db.session.commit()
+        return order
+
+    @staticmethod
+    def close_order(order_id: UUID, closed_by) -> Order:
         order = Order.query.get(order_id)
         if order:
-            order.status = 'closed'
+            order.status    = 'closed'
             order.closed_by = closed_by
-            # marca la hora de cierre en PostgreSQL
-            order.closed_at = datetime.utcnow() 
+            order.closed_at = datetime.utcnow()
             db.session.commit()
         return order

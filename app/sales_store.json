@@ -1,0 +1,480 @@
+[
+  {
+    "id": 6,
+    "timestamp": "2026-07-11T11:45:26",
+    "date": "2026-07-11",
+    "time": "11:45:26",
+    "station": "cashier",
+    "branch": "principal",
+    "ticket_type": "payment_receipt",
+    "order_id": "67b9e3fe-ed54-423a-b5ac-01c0edcb74ec",
+    "table_code": "M3",
+    "payment_method": "cash",
+    "payment_method_label": "Efectivo",
+    "subtotal": 255.0,
+    "tax": 0.0,
+    "tip": 0.0,
+    "total": 255.0,
+    "received_amount": 255.0,
+    "change_amount": 0.0,
+    "items": [
+      {
+        "name": "Quesabirria",
+        "category": "Sin categoría",
+        "qty": 2.0,
+        "unit_price": 70.0,
+        "total": 140.0
+      },
+      {
+        "name": "Torta con Queso",
+        "category": "Sin categoría",
+        "qty": 1.0,
+        "unit_price": 85.0,
+        "total": 85.0
+      },
+      {
+        "name": "Refresco",
+        "category": "Sin categoría",
+        "qty": 1.0,
+        "unit_price": 30.0,
+        "total": 30.0
+      }
+    ],
+    "closed": false,
+    "raw_payload": {
+      "type": "payment_receipt",
+      "order_id": "67b9e3fe-ed54-423a-b5ac-01c0edcb74ec",
+      "table_code": "M3",
+      "date": "11/07/2026",
+      "time": "11:45",
+      "is_partial": false,
+      "seat_labels": [
+        "Antonio",
+        "Jose"
+      ],
+      "seats": {
+        "Jose": [
+          {
+            "qty": 2.0,
+            "name": "Quesabirria",
+            "unit_price": 70.0,
+            "total": 140.0,
+            "notes": ""
+          }
+        ],
+        "Antonio": [
+          {
+            "qty": 1.0,
+            "name": "Torta con Queso",
+            "unit_price": 85.0,
+            "total": 85.0,
+            "notes": ""
+          },
+          {
+            "qty": 1.0,
+            "name": "Refresco",
+            "unit_price": 30.0,
+            "total": 30.0,
+            "notes": ""
+          }
+        ]
+      },
+      "table_subtotal": 255.0,
+      "table_tax": 0.0,
+      "subtotal": 255.0,
+      "tax": 0.0,
+      "tip": 0.0,
+      "total": 255.0,
+      "method": "cash",
+      "received_amount": 255.0,
+      "change_amount": 0.0
+    }
+  },
+  {
+    "id": 5,
+    "timestamp": "2026-06-18T18:57:57",
+    "date": "2026-06-18",
+    "time": "18:57:57",
+    "station": "cashier",
+    "branch": "principal",
+    "ticket_type": "payment_receipt",
+    "order_id": "1e6d0205-62d2-46a3-9378-9c4fd68143a2",
+    "table_code": "M1",
+    "payment_method": "cash",
+    "payment_method_label": "Efectivo",
+    "subtotal": 120.0,
+    "tax": 0.0,
+    "tip": 0.0,
+    "total": 120.0,
+    "received_amount": 120.0,
+    "change_amount": 0.0,
+    "items": [
+      {
+        "name": "Burrito de Frijol",
+        "category": "Sin categoría",
+        "qty": 4.0,
+        "unit_price": 15.0,
+        "total": 60.0
+      },
+      {
+        "name": "Burrito de Frijol",
+        "category": "Sin categoría",
+        "qty": 4.0,
+        "unit_price": 15.0,
+        "total": 60.0
+      }
+    ],
+    "closed": false,
+    "raw_payload": {
+      "type": "payment_receipt",
+      "order_id": "1e6d0205-62d2-46a3-9378-9c4fd68143a2",
+      "table_code": "M1",
+      "date": "18/06/2026",
+      "time": "18:57",
+      "is_partial": false,
+      "seat_labels": [
+        "Fernando",
+        "Octavio"
+      ],
+      "seats": {
+        "Octavio": [
+          {
+            "qty": 4.0,
+            "name": "Burrito de Frijol",
+            "unit_price": 15.0,
+            "total": 60.0,
+            "notes": ""
+          }
+        ],
+        "Fernando": [
+          {
+            "qty": 4.0,
+            "name": "Burrito de Frijol",
+            "unit_price": 15.0,
+            "total": 60.0,
+            "notes": ""
+          }
+        ]
+      },
+      "table_subtotal": 120.0,
+      "table_tax": 0.0,
+      "subtotal": 120.0,
+      "tax": 0.0,
+      "tip": 0.0,
+      "total": 120.0,
+      "method": "cash",
+      "received_amount": 120.0,
+      "change_amount": 0.0
+    }
+  },
+  {
+    "id": 4,
+    "timestamp": "2026-06-18T18:52:22",
+    "date": "2026-06-18",
+    "time": "18:52:22",
+    "station": "cashier",
+    "branch": "principal",
+    "ticket_type": "payment_receipt",
+    "order_id": "dabb4506-61d8-412a-8f78-008e7c9f7e97",
+    "table_code": "M1",
+    "payment_method": "card",
+    "payment_method_label": "Tarjeta",
+    "subtotal": 600.0,
+    "tax": 0.0,
+    "tip": 0.0,
+    "total": 600.0,
+    "received_amount": 600.0,
+    "change_amount": 0.0,
+    "items": [
+      {
+        "name": "Venta Manual",
+        "category": "Sin categoría",
+        "qty": 1.0,
+        "unit_price": 600.0,
+        "total": 600.0
+      }
+    ],
+    "closed": false,
+    "raw_payload": {
+      "type": "payment_receipt",
+      "order_id": "dabb4506-61d8-412a-8f78-008e7c9f7e97",
+      "table_code": "M1",
+      "date": "18/06/2026",
+      "time": "18:52",
+      "is_partial": false,
+      "seat_labels": [
+        "1"
+      ],
+      "seats": {
+        "1": [
+          {
+            "qty": 1.0,
+            "name": "Venta Manual",
+            "unit_price": 600.0,
+            "total": 600.0,
+            "notes": "Medio Litro"
+          }
+        ]
+      },
+      "table_subtotal": 600.0,
+      "table_tax": 0.0,
+      "subtotal": 600.0,
+      "tax": 0.0,
+      "tip": 0.0,
+      "total": 600.0,
+      "method": "card",
+      "received_amount": 600.0,
+      "change_amount": 0.0
+    }
+  },
+  {
+    "id": 3,
+    "timestamp": "2026-06-18T18:51:09",
+    "date": "2026-06-18",
+    "time": "18:51:09",
+    "station": "cashier",
+    "branch": "principal",
+    "ticket_type": "payment_receipt",
+    "order_id": "ce2631e0-74c0-447b-8eec-f6ea8dbd9253",
+    "table_code": "M1",
+    "payment_method": "card",
+    "payment_method_label": "Tarjeta",
+    "subtotal": 270.0,
+    "tax": 0.0,
+    "tip": 0.0,
+    "total": 270.0,
+    "received_amount": 300.0,
+    "change_amount": 30.0,
+    "items": [
+      {
+        "name": "Burrito de Frijol",
+        "category": "Sin categoría",
+        "qty": 1.0,
+        "unit_price": 15.0,
+        "total": 15.0
+      },
+      {
+        "name": "Torta con Queso",
+        "category": "Sin categoría",
+        "qty": 3.0,
+        "unit_price": 85.0,
+        "total": 255.0
+      }
+    ],
+    "closed": false,
+    "raw_payload": {
+      "type": "payment_receipt",
+      "order_id": "ce2631e0-74c0-447b-8eec-f6ea8dbd9253",
+      "table_code": "M1",
+      "date": "18/06/2026",
+      "time": "18:51",
+      "is_partial": false,
+      "seat_labels": [
+        "1"
+      ],
+      "seats": {
+        "1": [
+          {
+            "qty": 1.0,
+            "name": "Burrito de Frijol",
+            "unit_price": 15.0,
+            "total": 15.0,
+            "notes": ""
+          },
+          {
+            "qty": 3.0,
+            "name": "Torta con Queso",
+            "unit_price": 85.0,
+            "total": 255.0,
+            "notes": ""
+          }
+        ]
+      },
+      "table_subtotal": 270.0,
+      "table_tax": 0.0,
+      "subtotal": 270.0,
+      "tax": 0.0,
+      "tip": 0.0,
+      "total": 270.0,
+      "method": "card",
+      "received_amount": 300.0,
+      "change_amount": 30.0
+    }
+  },
+  {
+    "id": 2,
+    "timestamp": "2026-06-18T18:50:17",
+    "date": "2026-06-18",
+    "time": "18:50:17",
+    "station": "cashier",
+    "branch": "principal",
+    "ticket_type": "payment_receipt",
+    "order_id": "f9fd8ecd-b711-415f-ad06-38c613822238",
+    "table_code": "M2",
+    "payment_method": "cash",
+    "payment_method_label": "Efectivo",
+    "subtotal": 990.0,
+    "tax": 0.0,
+    "tip": 0.0,
+    "total": 990.0,
+    "received_amount": 1000.0,
+    "change_amount": 10.0,
+    "items": [
+      {
+        "name": "Dorado Ahogado",
+        "category": "Sin categoría",
+        "qty": 1.0,
+        "unit_price": 50.0,
+        "total": 50.0
+      },
+      {
+        "name": "Jugo",
+        "category": "Sin categoría",
+        "qty": 3.0,
+        "unit_price": 70.0,
+        "total": 210.0
+      },
+      {
+        "name": "Jugo",
+        "category": "Sin categoría",
+        "qty": 1.0,
+        "unit_price": 70.0,
+        "total": 70.0
+      },
+      {
+        "name": "Orden en plato",
+        "category": "Sin categoría",
+        "qty": 6.0,
+        "unit_price": 110.0,
+        "total": 660.0
+      }
+    ],
+    "closed": false,
+    "raw_payload": {
+      "type": "payment_receipt",
+      "order_id": "f9fd8ecd-b711-415f-ad06-38c613822238",
+      "table_code": "M2",
+      "date": "18/06/2026",
+      "time": "18:50",
+      "is_partial": false,
+      "seat_labels": [
+        "1"
+      ],
+      "seats": {
+        "1": [
+          {
+            "qty": 1.0,
+            "name": "Dorado Ahogado",
+            "unit_price": 50.0,
+            "total": 50.0,
+            "notes": ""
+          },
+          {
+            "qty": 3.0,
+            "name": "Jugo",
+            "unit_price": 70.0,
+            "total": 210.0,
+            "notes": ""
+          },
+          {
+            "qty": 1.0,
+            "name": "Jugo",
+            "unit_price": 70.0,
+            "total": 70.0,
+            "notes": ""
+          },
+          {
+            "qty": 6.0,
+            "name": "Orden en plato",
+            "unit_price": 110.0,
+            "total": 660.0,
+            "notes": ""
+          }
+        ]
+      },
+      "table_subtotal": 990.0,
+      "table_tax": 0.0,
+      "subtotal": 990.0,
+      "tax": 0.0,
+      "tip": 0.0,
+      "total": 990.0,
+      "method": "cash",
+      "received_amount": 1000.0,
+      "change_amount": 10.0
+    }
+  },
+  {
+    "id": 1,
+    "timestamp": "2026-06-18T18:47:36",
+    "date": "2026-06-18",
+    "time": "18:47:36",
+    "station": "cashier",
+    "branch": "principal",
+    "ticket_type": "payment_receipt",
+    "order_id": "6427122c-f7dd-4fcd-9193-841d00d07d6c",
+    "table_code": "M8",
+    "payment_method": "cash",
+    "payment_method_label": "Efectivo",
+    "subtotal": 115.0,
+    "tax": 0.0,
+    "tip": 0.0,
+    "total": 115.0,
+    "received_amount": 115.0,
+    "change_amount": 0.0,
+    "items": [
+      {
+        "name": "Dorado Ahogado",
+        "category": "Sin categoría",
+        "qty": 1.0,
+        "unit_price": 50.0,
+        "total": 50.0
+      },
+      {
+        "name": "Dorado Ahogado con Queso",
+        "category": "Sin categoría",
+        "qty": 1.0,
+        "unit_price": 65.0,
+        "total": 65.0
+      }
+    ],
+    "closed": false,
+    "raw_payload": {
+      "type": "payment_receipt",
+      "order_id": "6427122c-f7dd-4fcd-9193-841d00d07d6c",
+      "table_code": "M8",
+      "date": "18/06/2026",
+      "time": "18:47",
+      "is_partial": false,
+      "seat_labels": [
+        "1"
+      ],
+      "seats": {
+        "1": [
+          {
+            "qty": 1.0,
+            "name": "Dorado Ahogado",
+            "unit_price": 50.0,
+            "total": 50.0,
+            "notes": ""
+          },
+          {
+            "qty": 1.0,
+            "name": "Dorado Ahogado con Queso",
+            "unit_price": 65.0,
+            "total": 65.0,
+            "notes": ""
+          }
+        ]
+      },
+      "table_subtotal": 115.0,
+      "table_tax": 0.0,
+      "subtotal": 115.0,
+      "tax": 0.0,
+      "tip": 0.0,
+      "total": 115.0,
+      "method": "cash",
+      "received_amount": 115.0,
+      "change_amount": 0.0
+    }
+  }
+]
