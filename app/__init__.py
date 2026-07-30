@@ -13,6 +13,9 @@ def create_app(config_class=Config):
 
     from app import models  # noqa
 
+    with app.app_context():
+        db.create_all()
+
     from app.routes.auth_routes     import auth_bp
     from app.routes.order_routes    import order_bp
     from app.routes.table_routes    import table_bp
