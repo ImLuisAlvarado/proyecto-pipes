@@ -13,6 +13,7 @@ from app.extensions import db
 from app.models.order import Order, OrderItem, PrintJob
 from app.models.core import DiningTable, Printer
 from app.models.product import Product
+from app.printer_simulation import add_ticket_from_payload
 
 
 class PrintService:
@@ -366,6 +367,17 @@ class PrintService:
                 data = text_payload.encode('utf-8')
             else:
                 data = json.dumps(job.payload).encode('utf-8')
+
+            ticket_payload = job.payload if isinstance(job.payload, dict) else {'raw': job.payload}
+            ticket_type = ticket_payload.get('type') or job.job_type or printer.station
+            ticket_station = printer.station or 'kitchen'
+            add_ticket_from_payload(
+                ticket_payload,
+                ticket_station,
+                raw_size=len(data),
+                from_ip='print-service',
+                ticket_type=ticket_type,
+            )
 
             print(f">>> intentando TCP a {printer.ip_address}:{printer.port} ({len(data)} bytes)")
             with socket.create_connection((str(printer.ip_address), printer.port), timeout=5) as sock:

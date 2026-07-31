@@ -1048,6 +1048,47 @@ def compare_days():
     return jsonify(result)
 
 
+def add_ticket_from_payload(payload_data, station, *, raw_size=None, from_ip=None, ticket_type=None, text_content=None):
+    if payload_data is None:
+        payload_data = {}
+
+    if ticket_type is None:
+        ticket_type = payload_data.get("type", station) if isinstance(payload_data, dict) else station
+
+    if text_content is None:
+        if isinstance(payload_data, dict):
+            text_content = format_ticket_from_payload(payload_data, station)
+        else:
+            text_content = str(payload_data)
+
+    ui_type = ticket_type if ticket_type in (
+        "kitchen", "refill", "cashier", "cashier_bill", "payment_receipt"
+    ) else station
+
+    ticket = {
+        "id": len(tickets) + 1,
+        "station": station,
+        "ticket_type": ui_type,
+        "timestamp": datetime.now().strftime("%H:%M:%S"),
+        "date": datetime.now().strftime("%d/%m/%Y"),
+        "content": text_content,
+        "raw_size": raw_size or 0,
+        "from_ip": from_ip,
+    }
+
+    with tickets_lock:
+        tickets.insert(0, ticket)
+        if len(tickets) > 50:
+            tickets.pop()
+
+    if isinstance(payload_data, dict) and should_store_sale(payload_data, ui_type):
+        sale = normalize_sale(payload_data, station)
+        add_sale(sale)
+
+    print("[{}] Ticket desde {} — {} bytes".format(ui_type.upper(), from_ip or "local", ticket["raw_size"]))
+    return ticket
+
+
 def handle_connection(conn, addr, station):
     with conn:
         chunks = []
@@ -1070,31 +1111,14 @@ def handle_connection(conn, addr, station):
             ticket_type = station
             text_content = parse_escpos(raw)
 
-        ui_type = ticket_type if ticket_type in (
-            "kitchen", "refill", "cashier", "cashier_bill", "payment_receipt"
-        ) else station
-
-        ticket = {
-            "id": len(tickets) + 1,
-            "station": station,
-            "ticket_type": ui_type,
-            "timestamp": datetime.now().strftime("%H:%M:%S"),
-            "date": datetime.now().strftime("%d/%m/%Y"),
-            "content": text_content,
-            "raw_size": len(raw),
-            "from_ip": addr[0],
-        }
-
-        with tickets_lock:
-            tickets.insert(0, ticket)
-            if len(tickets) > 50:
-                tickets.pop()
-
-        if payload_data is not None and should_store_sale(payload_data, ticket_type):
-            sale = normalize_sale(payload_data, station)
-            add_sale(sale)
-
-        print("[{}] Ticket desde {} — {} bytes".format(ui_type.upper(), addr[0], len(raw)))
+        add_ticket_from_payload(
+            payload_data,
+            station,
+            raw_size=len(raw),
+            from_ip=addr[0],
+            ticket_type=ticket_type,
+            text_content=text_content,
+        )
 
 
 servers_started = False
