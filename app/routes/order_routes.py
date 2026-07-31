@@ -174,7 +174,11 @@ def close_order(order_id: UUID):
     json_data = request.get_json() or {}
     try:
         schema = OrderClose(**json_data)
-        closed = order_service.close_account(order_id, schema.closed_by)
+        closed = order_service.close_account(
+            order_id,
+            schema.closed_by,
+            schema.payment_method or 'N/A'
+        )
         return jsonify(OrderResponse.model_validate(closed).model_dump()), 200
     except ValidationError as e:
         return _val_err(e)
