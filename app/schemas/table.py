@@ -1,8 +1,13 @@
 # app/schemas/table.py
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_serializer
 from uuid import UUID
 from datetime import datetime
 from typing import Optional
+
+
+def _epoch(dt) -> int | None:
+    return int(dt.timestamp()) if dt else None
+
 
 class TableBase(BaseModel):
     branch_id: UUID
@@ -27,3 +32,11 @@ class TableResponse(TableBase):
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer('id', 'branch_id')
+    def ser_uuid(self, v):
+        return str(v) if v else None
+
+    @field_serializer('created_at', 'updated_at')
+    def ser_dt(self, v):
+        return _epoch(v)
