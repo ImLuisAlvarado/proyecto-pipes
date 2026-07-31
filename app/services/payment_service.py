@@ -157,6 +157,7 @@ class PaymentService:
             'tax': float(client_tax),
             'tip': float(schema.tip_amount),
             'total': float(payment.amount),
+            'payment_method': payment.method,
             'method': payment.method,
             'received_amount': received_amount,
             'change_amount': change,

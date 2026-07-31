@@ -167,6 +167,7 @@ class OrderResponse(BaseModel):
 
 class OrderClose(BaseModel):
     closed_by: Optional[UUID] = None
+    payment_method: Optional[str] = None
 
 
 class OrderTransfer(BaseModel):

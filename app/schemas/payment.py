@@ -1,19 +1,22 @@
 # app/schemas/payment.py
-from pydantic import BaseModel, ConfigDict, Field, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, AliasChoices
 from uuid import UUID
 from datetime import datetime
 from typing import Optional, List
 
 
 class PaymentCreate(BaseModel):
-    method:          str            # 'cash' | 'card' | 'transfer' | 'mixed'
-    amount:          float = Field(..., gt=0)
-    tip_amount:      float = 0.0
+    method: str = Field(
+        ...,
+        validation_alias=AliasChoices('method', 'payment_method')
+    )  # 'cash' | 'card' | 'transfer' | 'mixed'
+    amount: float = Field(..., gt=0)
+    tip_amount: float = 0.0
     received_amount: Optional[float] = None   # efectivo entregado por el cliente
-    change_amount:   Optional[float] = None   # cambio calculado
-    seat_labels:     Optional[List[str]] = None  # asientos que cubre este pago
-    notes:           Optional[str] = None
-    received_by:     Optional[UUID] = None
+    change_amount: Optional[float] = None   # cambio calculado
+    seat_labels: Optional[List[str]] = None  # asientos que cubre este pago
+    notes: Optional[str] = None
+    received_by: Optional[UUID] = None
 
 
 class PaymentResponse(BaseModel):
