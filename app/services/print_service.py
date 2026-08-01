@@ -11,12 +11,23 @@ from collections import defaultdict
 
 from app.extensions import db
 from app.models.order import Order, OrderItem, PrintJob
-from app.models.core import DiningTable, Printer
+from app.models.core import DiningTable, Printer, Customer
 from app.models.product import Product
 from app.printer_simulation import add_ticket_from_payload
 
 
 class PrintService:
+
+    @staticmethod
+    def _customer_name_for_order(order: Order) -> str | None:
+        if not order.customer_id:
+            return None
+
+        customer = Customer.query.get(order.customer_id)
+        if not customer or not customer.full_name:
+            return None
+
+        return customer.full_name.strip()
 
     def dispatch_kitchen_ticket(self, order: Order) -> list[PrintJob]:
         print(f">>> dispatch_kitchen_ticket orden={order.id} branch={order.branch_id}")
@@ -154,6 +165,7 @@ class PrintService:
 
         # Group items by seat_label
         seats = {}
+        seat_totals = {}
         subtotal = 0.0
 
         for item in order.items:
@@ -164,6 +176,7 @@ class PrintService:
             subtotal += line_total
 
             seat = item.seat_label or 'Mesa'
+            seat_totals[seat] = seat_totals.get(seat, 0.0) + line_total
             seats.setdefault(seat, []).append({
                 'product_id': str(item.product_id),
                 'name': product.name if product else str(item.product_id),
@@ -177,6 +190,8 @@ class PrintService:
 
         tax = float(order.tax_total) if order.tax_total is not None else 0.0
         total = float(order.total) if order.total is not None else subtotal + tax
+        customer_name = self._customer_name_for_order(order)
+        seat_labels = list(seats.keys())
 
         return {
             'order_id': str(order.id),
@@ -184,6 +199,10 @@ class PrintService:
             'table_id': str(order.table_id),
             'table_code': table_label,
             'order_number': getattr(order, 'order_number', None),
+            'customer_name': customer_name,
+            'client_name': customer_name,
+            'seat_labels': seat_labels,
+            'seat_totals': seat_totals,
             'seats': seats,
             'subtotal': subtotal,
             'tax': tax,
@@ -239,6 +258,7 @@ class PrintService:
     def _build_cashier_payload(self, order: Order, table_code: str, payment_method: str) -> dict:
         # Group items by seat_label for the closing ticket
         seats = {}
+        seat_totals = {}
         subtotal = 0.0
 
         for item in order.items:
@@ -249,6 +269,7 @@ class PrintService:
             subtotal += line_total
 
             seat = item.seat_label or 'Mesa'
+            seat_totals[seat] = seat_totals.get(seat, 0.0) + line_total
             seats.setdefault(seat, []).append({
                 'qty': qty,
                 'name': product.name if product else str(item.product_id),
@@ -259,6 +280,7 @@ class PrintService:
 
         tax = float(order.tax_total) if order.tax_total is not None else 0.0
         total = float(order.total) if order.total is not None else subtotal + tax
+        customer_name = self._customer_name_for_order(order)
 
         return {
             'type': 'cashier',
@@ -266,7 +288,10 @@ class PrintService:
             'table_code': table_code,
             'date': datetime.now().strftime('%d/%m/%Y'),
             'time': datetime.now().strftime('%H:%M'),
+            'customer_name': customer_name,
+            'client_name': customer_name,
             'seats': seats,
+            'seat_totals': seat_totals,
             'subtotal': subtotal,
             'tax_total': tax,
             'total': total,
@@ -284,6 +309,9 @@ class PrintService:
         lines.append(sep)
         lines.append(f"Mesa: {payload.get('table_code', '?')}")
         lines.append(f"Orden: {str(payload.get('order_id', '?'))[:8]}...")
+        customer_name = payload.get('customer_name') or payload.get('client_name')
+        if customer_name:
+            lines.append(f"Cliente: {customer_name}")
         lines.append(f"Fecha: {payload.get('date', '?')}")
         lines.append(f"Hora: {payload.get('time', '?')}")
         lines.append(dash)

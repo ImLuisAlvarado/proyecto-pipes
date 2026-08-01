@@ -94,6 +94,7 @@ class PaymentService:
                                       table_code: str) -> dict:
         from datetime import datetime
         from app.models.product import Product
+        from app.models.core import Customer
 
         seat_labels = schema.seat_labels or []
         all_items = list(order.items)
@@ -113,6 +114,7 @@ class PaymentService:
             items = all_items
 
         seats_data: dict[str, list] = {}
+        seat_totals: dict[str, float] = {}
         client_subtotal = 0.0
         client_tax = 0.0
 
@@ -120,8 +122,10 @@ class PaymentService:
             seat = item.seat_label or '1'
             product = Product.query.get(item.product_id)
             line_total = float(item.qty) * float(item.unit_price)
+            line_tax = line_total * (float(item.tax_rate) / 100)
             client_subtotal += line_total
-            client_tax += line_total * (float(item.tax_rate) / 100)
+            client_tax += line_tax
+            seat_totals[seat] = seat_totals.get(seat, 0.0) + line_total + line_tax
 
             seats_data.setdefault(seat, []).append({
                 'qty': float(item.qty),
@@ -142,15 +146,23 @@ class PaymentService:
             else None
         )
 
+        customer_name = None
+        if order.customer_id:
+            customer = Customer.query.get(order.customer_id)
+            customer_name = customer.full_name.strip() if customer and customer.full_name else None
+
         return {
             'type': 'payment_receipt',
             'order_id': str(order.id),
             'table_code': table_code,
             'date': datetime.now().strftime('%d/%m/%Y'),
             'time': datetime.now().strftime('%H:%M'),
+            'customer_name': customer_name,
+            'client_name': customer_name,
             'is_partial': is_partial,
             'seat_labels': seat_labels,
             'seats': seats_data,
+            'seat_totals': seat_totals,
             'table_subtotal': float(table_subtotal),
             'table_tax': float(table_tax),
             'subtotal': float(client_subtotal),
