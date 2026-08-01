@@ -304,6 +304,40 @@ def format_ticket_from_payload(payload, station):
             lines.append("")
         lines.append(sep)
 
+    elif ticket_type == "cashier":
+        customer_name = customer_name_from_payload(payload)
+        payment_method = payload.get("payment_method") or payload.get("method") or "N/A"
+        lines.append(sep)
+        lines.append("{:^40}".format("PIPES DESDE 1989"))
+        lines.append("{:^40}".format("VOUCHER"))
+        lines.append(sep)
+        lines.append("Mesa: {:>32}".format(payload.get("table_code", "?")))
+        lines.append("Orden: {}...".format(payload.get("order_id", "?")[:8]))
+        if customer_name:
+            lines.append("Cliente: {}".format(customer_name))
+        lines.append("Fecha: {}  {}".format(payload.get("date", ""), payload.get("time", "")))
+        lines.append(dash)
+        for seat_label, items in payload.get("seats", {}).items():
+            lines.append("  -- Cliente {} --".format(seat_label))
+            for item in items:
+                qty = item.get("qty", 1)
+                name = str(item.get("name", "?"))[:20]
+                total = money(item.get("total"))
+                notes = str(item.get("notes", "")).strip()
+                lines.append("  {:<3} {:<22} ${:>7.2f}".format(qty, name, total))
+                if notes:
+                    lines.append("       * {}".format(notes))
+            seat_total = money((payload.get("seat_totals") or {}).get(seat_label, 0))
+            lines.append("  {:<28} ${:>7.2f}".format("Monto cliente", seat_total))
+            lines.append(dash)
+        lines.append("  {:<28} ${:>7.2f}".format("Subtotal", money(payload.get("subtotal"))))
+        lines.append("  {:<28} ${:>7.2f}".format("IVA", money(payload.get("tax_total") or payload.get("tax"))))
+        lines.append("  {:<28} ${:>7.2f}".format("TOTAL", money(payload.get("total"))))
+        lines.append("  {:<28} {}".format("Metodo pago", payment_method_label(payment_method)))
+        lines.append(sep)
+        lines.append("{:^40}".format("¡Gracias por su visita!"))
+        lines.append(sep)
+
     elif ticket_type == "cashier_bill":
         customer_name = customer_name_from_payload(payload)
         seat_labels = payload.get("seat_labels") or []
@@ -319,21 +353,19 @@ def format_ticket_from_payload(payload, station):
         if seat_labels:
             lines.append("Comensales: {}".format(", ".join(seat_labels)))
         lines.append(dash)
-        lines.append("{:<5} {:<22} {:>8}".format("Cant", "Producto", "Total"))
-        lines.append(dash)
-        for item in payload.get("items", []):
-            qty = item.get("qty", 1)
-            name = str(item.get("name", "?"))[:20]
-            total = money(item.get("total"))
-            seat = item.get("seat_label") or ""
-            seat_str = "[{}] ".format(seat) if seat else ""
-            notes = item.get("notes") or ""
-            lines.append("  {:<3} {}{:<22} ${:>7.2f}".format(qty, seat_str, name, total))
-            if notes:
-                lines.append("       * {}".format(notes))
-        lines.append(dash)
-        for seat_label, seat_total in sorted((payload.get("seat_totals") or {}).items()):
-            lines.append("  Cliente {:<22} ${:>7.2f}".format(seat_label, money(seat_total)))
+        for seat_label, items in payload.get("seats", {}).items():
+            lines.append("  -- Cliente {} --".format(seat_label))
+            for item in items:
+                qty = item.get("qty", 1)
+                name = str(item.get("name", "?"))[:20]
+                total = money(item.get("total"))
+                notes = str(item.get("notes", "")).strip()
+                lines.append("  {:<3} {:<22} ${:>7.2f}".format(qty, name, total))
+                if notes:
+                    lines.append("       * {}".format(notes))
+            seat_total = money((payload.get("seat_totals") or {}).get(seat_label, 0))
+            lines.append("  {:<28} ${:>7.2f}".format("Monto cliente", seat_total))
+            lines.append(dash)
         lines.append("  {:<28} ${:>7.2f}".format("Subtotal", money(payload.get("subtotal"))))
         lines.append("  {:<28} ${:>7.2f}".format("IVA", money(payload.get("tax"))))
         lines.append("  {:<28} ${:>7.2f}".format("TOTAL", money(payload.get("total"))))
@@ -344,6 +376,7 @@ def format_ticket_from_payload(payload, station):
         is_partial = payload.get("is_partial", False)
         seat_labels = payload.get("seat_labels", [])
         customer_name = customer_name_from_payload(payload)
+        payment_method = payload.get("payment_method") or payload.get("method") or "N/A"
         header = "PAGO PARCIAL" if is_partial else "COMPROBANTE DE PAGO"
         lines.append(sep)
         lines.append("{:^40}".format("PIPES DESDE 1989"))
@@ -356,11 +389,8 @@ def format_ticket_from_payload(payload, station):
             lines.append("Comensales: {}".format(", ".join(seat_labels)))
         lines.append("Fecha: {}  {}".format(payload.get("date", ""), payload.get("time", "")))
         lines.append(dash)
-        lines.append("{:<5} {:<22} {:>8}".format("Cant", "Producto", "Total"))
-        lines.append(dash)
         for seat_label, items in payload.get("seats", {}).items():
-            if len(payload.get("seats", {})) > 1:
-                lines.append("  -- Comensal {} --".format(seat_label))
+            lines.append("  -- Comensal {} --".format(seat_label))
             for item in items:
                 qty = item.get("qty", 1)
                 name = str(item.get("name", "?"))[:20]
@@ -369,9 +399,9 @@ def format_ticket_from_payload(payload, station):
                 lines.append("  {:<3} {:<22} ${:>7.2f}".format(qty, name, total))
                 if notes:
                     lines.append("       * {}".format(notes))
-            if payload.get("seat_totals"):
-                lines.append("  {:<28} ${:>7.2f}".format("Monto cliente", money(payload.get("seat_totals", {}).get(seat_label, 0))))
-        lines.append(dash)
+            seat_total = money((payload.get("seat_totals") or {}).get(seat_label, 0))
+            lines.append("  {:<28} ${:>7.2f}".format("Monto cliente", seat_total))
+            lines.append(dash)
         lines.append("  {:<28} ${:>7.2f}".format("IVA", money(payload.get("tax"))))
         lines.append("  {:<28} ${:>7.2f}".format("Total de este cliente", money(payload.get("total"))))
         tip = money(payload.get("tip"))
@@ -380,7 +410,7 @@ def format_ticket_from_payload(payload, station):
         lines.append(dash)
         lines.append("  {:<28} ${:>7.2f}".format("Subtotal de la mesa", money(payload.get("table_subtotal"))))
         lines.append(dash)
-        lines.append("  Metodo: {}".format(payment_method_label(payload.get("payment_method") or payload.get("method") or "")))
+        lines.append("  Metodo: {}".format(payment_method_label(payment_method)))
         received = payload.get("received_amount")
         change = payload.get("change_amount")
         if received is not None:
